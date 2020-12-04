@@ -1,4 +1,6 @@
-import { DateTimeFormatter, LocalDate, LocalDateTime, LocalTime, nativeJs, OffsetDateTime, Temporal, ZoneOffset } from '@js-joda/core'
+
+import { DateTime, FixedOffsetZone } from 'luxon'
+import dayjs, { Dayjs } from 'dayjs'
 import moment from 'moment'
 
 type Opaque<K, T> = T & { __TYPE__: K }
@@ -37,44 +39,54 @@ export function isOffsetDateTimeString(date: unknown): date is LocalDateString {
 	return date.match(/^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}(:[0-9]{2}(\.[0-9]{3})?)?(Z|(\+|-)[0-9]{2}:[0-9]{2})$/) !== null
 }
 
-function parse(date: string | moment.Moment | Date): Temporal {
+export type DateLike = string | moment.Moment | DateTime | Dayjs | Date
+
+function parse(date: DateLike): DateTime {
 	if (typeof date === 'string') {
-		if (isLocalDateTimeString(date)) {
-			return LocalDateTime.parse(date)
-		} else if (isLocalDateString(date)) {
-			return LocalDate.parse(date)
-		} else if (isLocalTimeString(date)) {
-			return LocalTime.parse(date)
-		} else if (isOffsetDateTimeString(date)) {
-			return OffsetDateTime.parse(date)
-		} else {
-			throw new Error(`Unrecognised date format: ${date}`)
-		}
+		return DateTime.fromISO(date, { setZone: true })
 	} else if (moment && moment.isMoment(date)) {
 		if (!date.isValid()) {
-			throw new Error('Invalid moment provided')
+			throw new Error('Invalid Moment provided')
 		}
-
-		/* We parse the moment using the appropriate UTC offset */
-		const offset = date.utcOffset()
-		return OffsetDateTime.parse(date.toISOString()).withOffsetSameInstant(ZoneOffset.ofTotalMinutes(offset))
+		return DateTime.fromISO(date.toISOString()).setZone(FixedOffsetZone.instance(date.utcOffset()))
+	} else if (DateTime.isDateTime(date)) {
+		return date
+	} else if (dayjs && dayjs.isDayjs(date)) {
+		if (!date.isValid()) {
+			throw new Error('Invalid DayJs provided')
+		}
+		return DateTime.fromISO(date.toISOString()).setZone(FixedOffsetZone.instance(date.utcOffset()))
+	} else if (date instanceof Date) {
+		return DateTime.fromJSDate(date)
 	} else {
-		return OffsetDateTime.from(nativeJs(date))
+		throw new Error(`Unsupported date argument: ${date}`)
 	}
 }
 
-export function toLocalDateTimeString(date: string | moment.Moment | Date): LocalDateTimeString {
-	return LocalDateTime.from(parse(date)).format(DateTimeFormatter.ISO_LOCAL_DATE_TIME) as LocalDateTimeString
+function formatLocalDateTimeString(date: DateTime): string {
+	return date.toFormat('yyyy-MM-dd\'T\'HH:mm:ss.SSS').replace(/\.000$/, '')
 }
 
-export function toLocalDateString(date: string | moment.Moment | Date): LocalDateString {
-	return LocalDate.from(parse(date)).format(DateTimeFormatter.ISO_LOCAL_DATE) as LocalDateString
+function formatLocalTimeString(date: DateTime): string {
+	return date.toFormat('HH:mm:ss.SSS').replace(/\.000$/, '')
 }
 
-export function toLocalTimeString(date: string | moment.Moment | Date): LocalTimeString {
-	return LocalTime.from(parse(date)).format(DateTimeFormatter.ISO_LOCAL_TIME) as LocalTimeString
+function formatOffsetDateTimeString(date: DateTime): string {
+	return date.toFormat('yyyy-MM-dd\'T\'HH:mm:ss.SSSZZ').replace(/\.000($|\+|-)/, '$1').replace(/\+00:00$/, 'Z')
 }
 
-export function toOffsetDateTimeString(date: string | moment.Moment | Date): OffsetDateTimeString {
-	return OffsetDateTime.from(parse(date)).format(DateTimeFormatter.ISO_OFFSET_DATE_TIME) as OffsetDateTimeString
+export function toLocalDateTimeString(date: DateLike): LocalDateTimeString {
+	return formatLocalDateTimeString(parse(date)) as LocalDateTimeString
+}
+
+export function toLocalDateString(date: DateLike): LocalDateString {
+	return parse(date).toISODate() as LocalDateString
+}
+
+export function toLocalTimeString(date: DateLike): LocalTimeString {
+	return formatLocalTimeString(parse(date)) as LocalTimeString
+}
+
+export function toOffsetDateTimeString(date: DateLike): OffsetDateTimeString {
+	return formatOffsetDateTimeString(parse(date)) as OffsetDateTimeString
 }
