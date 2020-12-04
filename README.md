@@ -2,7 +2,7 @@
 
 A simple library to provide type-safety for immutable and `===`able dates in TypeScript using opaquely-typed strings.
 
-Strings are the best representations for dates and times in JavaScript when you care able immutability and sameness, such as when you're working with [React](https://reactjs.org) components. Strings are also best when you're working with JSON, such as when using an API. You can use your favourite library to work with dates and times, but use Blind Date to represent the results.
+Strings are the best representations for dates and times in JavaScript when you care about immutability and sameness, such as when you're working with [React](https://reactjs.org) components. Strings are also best when you're working with JSON, such as when using an API. You can use your favourite library to work with dates and times, but use Blind Date to represent the results.
 
 ## Using
 
@@ -14,7 +14,7 @@ npm install blind-date
 import { toLocalDateTime } from 'blind-date'
 import moment from 'moment'
 
-const date: LocalDateTimeString = toLocalDateTimeString(moment(myDateInput, ['DD/MM/YY', 'DD/MM/YYYY'))
+const date: LocalDateTimeString = toLocalDateTimeString(moment(myDateInput, ['DD/MM/YY', 'DD/MM/YYYY']))
 return <MyComponent date={date} />
 ```
 
