@@ -1,4 +1,4 @@
-# Bind Date
+# Blind Date
 
 A simple library to provide type-safety for immutable and `===`able dates in TypeScript using opaquely-typed strings.
 
