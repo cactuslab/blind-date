@@ -7,7 +7,8 @@
   "scripts": {
     "build": "tsc -p tsconfig.prod.json",
     "prepare": "npm run build && npm test",
-    "test": "jest"
+    "test": "jest",
+    "watch": "tsc --watch"
   },
   "author": "Cactuslab",
   "license": "Apache-2.0",
