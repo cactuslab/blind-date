@@ -1,7 +1,5 @@
 
 import { DateTime, FixedOffsetZone } from 'luxon'
-import dayjs, { Dayjs } from 'dayjs'
-import moment from 'moment'
 
 type Opaque<K, T> = T & { __TYPE__: K }
 
@@ -39,25 +37,54 @@ export function isOffsetDateTimeString(date: unknown): date is LocalDateString {
 	return date.match(/^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}(:[0-9]{2}(\.[0-9]{3})?)?(Z|(\+|-)[0-9]{2}:[0-9]{2})$/) !== null
 }
 
-export type DateLike = string | moment.Moment | DateTime | Dayjs | Date
+/**
+ * A type that looks like a Moment of Dayjs, so we don't need to import or, more
+ * particularly, export Moment or Dayjs types.
+ */
+export interface MomentOrDayjsLike {
+	isValid(): boolean
+	toISOString(): string
+	utcOffset(): number
+}
+
+/**
+ * A type that looks like a Luxon DateTime, so we don't need to import or, more
+ * particularly, export Luxon types.
+ */
+export interface LuxonLike {
+	day: number
+	daysInMonth: number
+	daysInYear: number
+	invalidReason: string | null
+	invalidExplanation: string | null
+	zoneName: string
+}
+
+export type DateLike = string | MomentOrDayjsLike | LuxonLike | Date
+
+function isMomentOrDayjsLike(date: DateLike): date is MomentOrDayjsLike {
+	const anyDate = date as unknown as MomentOrDayjsLike
+	if (typeof anyDate.isValid === 'function' &&
+		typeof anyDate.toISOString === 'function' &&
+		typeof anyDate.utcOffset === 'function') {
+		return true
+	}
+
+	return false
+}
 
 function parse(date: DateLike): DateTime {
 	if (typeof date === 'string') {
 		return DateTime.fromISO(date, { setZone: true })
-	} else if (moment && moment.isMoment(date)) {
-		if (!date.isValid()) {
-			throw new Error('Invalid Moment provided')
-		}
-		return DateTime.fromISO(date.toISOString()).setZone(FixedOffsetZone.instance(date.utcOffset()))
 	} else if (DateTime.isDateTime(date)) {
 		return date
-	} else if (dayjs && dayjs.isDayjs(date)) {
-		if (!date.isValid()) {
-			throw new Error('Invalid DayJs provided')
-		}
-		return DateTime.fromISO(date.toISOString()).setZone(FixedOffsetZone.instance(date.utcOffset()))
 	} else if (date instanceof Date) {
 		return DateTime.fromJSDate(date)
+	} else if (isMomentOrDayjsLike(date)) {
+		if (!date.isValid()) {
+			throw new Error('Invalid date object provided')
+		}
+		return DateTime.fromISO(date.toISOString()).setZone(FixedOffsetZone.instance(date.utcOffset()))
 	} else {
 		throw new Error(`Unsupported date argument: ${date}`)
 	}
