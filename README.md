@@ -10,17 +10,33 @@ Strings are the best representations for dates and times in JavaScript when you 
 npm install blind-date
 ```
 
+Example:
+
 ```typescript
-import { toLocalDateTime } from 'blind-date'
+import { toLocalDateString, toLocalTimeString, toOffsetDateTimeString, toLocalDateTimeString, LocalDateTimeString, LocalDateString, LocalTimeString, OffsetDateTimeString } from '..'
 import moment from 'moment'
 
-const date: LocalDateTimeString = toLocalDateTimeString(moment(myDateInput, ['DD/MM/YY', 'DD/MM/YYYY']))
-return <MyComponent date={date} />
+const exampleMoment: moment.Moment = moment('22/1/2021 13:57', 'DD/MM/YYYY HH:mm')
+
+const localDate: LocalDateString = toLocalDateString(exampleMoment)
+// 2021-01-22
+
+const localDateTime: LocalDateTimeString = toLocalDateTimeString(exampleMoment)
+// 2021-01-22T13:57:00
+
+const localTime: LocalTimeString = toLocalTimeString(exampleMoment)
+// 13:57:00
+
+const offsetDateTime: OffsetDateTimeString = toOffsetDateTimeString(exampleMoment)
+// 2021-01-22T13:57:00+13:00
+
+const offsetDateTime2: OffsetDateTimeString = toOffsetDateTimeString('2021-01-22T13:57:00-08:00')
+// 2021-01-22T13:57:00-08:00
 ```
 
 ## Compatibility
 
-Blind Date uses ISO8601-formatted strings, and is compatible with [`Moment`](https://momentjs.com), `DateTime` from [Luxon](https://moment.github.io/luxon/), [`DayJs`](https://day.js.org), and JavaScript `Date`. Blind Date itself uses [Luxon](https://moment.github.io/luxon/) internally, and will support the others only if they are used in your project as it doesn't ship with them.
+Blind Date uses ISO8601-formatted strings, and is compatible with [`Moment`](https://momentjs.com), `DateTime` from [Luxon](https://moment.github.io/luxon/), [`DayJs`](https://day.js.org), and JavaScript `Date`. Blind Date itself uses [Luxon](https://moment.github.io/luxon/) internally, and will support the others only if they are used in your project as it doesn't depend on them.
 
 ## The benefit of strings and the problem with Dates
 
@@ -67,9 +83,9 @@ export function toOffsetDateTimeString(date: DateLike): OffsetDateTimeString;
 
 A local date and or time does not include a timezone offset. A local date is well suited for a birthday, for example, as it's considered to be the same date no matter where in the world you are. A local time is well suited for a time of day such as noon, as it's 12:00pm no matter where in the world you are.
 
-Local dates and times are also convenient when your application doesn't need or doesn't want to consider timezones.
+Local dates and times are also convenient when your application doesn't need to or doesn't want to consider timezones.
 
-The `toLocal...` functions consider the timezone of the input date (if present), and output a local date and or time _in that timezone_. So if you are in GMT+13:00 and call `toLocalTimeString('1969-12-31T17:59-08:00')` it will return `17:59:00` being the local time in the timezone of the offset date time provided.
+The `toLocal...` functions consider the timezone of the input date (if present), and output a local date and or time _in that timezone_. So even if you are in GMT+13:00 and call `toLocalTimeString('1969-12-31T17:59-08:00')` it will return `17:59:00` being the local time in the timezone of the offset date time provided.
 
 Note that many date libraries discard the timezone information when parsing date times. If you do not get the results you expect, check the actual timezone information in the input to the `toLocal...` functions.
 
