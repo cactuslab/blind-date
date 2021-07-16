@@ -94,6 +94,10 @@ function formatLocalDateTimeString(date: DateTime): string {
 	return date.toFormat('yyyy-MM-dd\'T\'HH:mm:ss.SSS').replace(/\.000$/, '')
 }
 
+function formatLocalDateString(date: DateTime): string {
+	return date.toISODate()
+}
+
 function formatLocalTimeString(date: DateTime): string {
 	return date.toFormat('HH:mm:ss.SSS').replace(/\.000$/, '')
 }
@@ -107,7 +111,7 @@ export function toLocalDateTimeString(date: DateLike): LocalDateTimeString {
 }
 
 export function toLocalDateString(date: DateLike): LocalDateString {
-	return parse(date).toISODate() as LocalDateString
+	return formatLocalDateString(parse(date)) as LocalDateString
 }
 
 export function toLocalTimeString(date: DateLike): LocalTimeString {
