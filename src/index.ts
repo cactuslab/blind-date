@@ -6,6 +6,28 @@ export type LocalDateString = Opaque<'LocalDateString', string>
 export type LocalTimeString = Opaque<'LocalTimeString', string>
 export type OffsetDateTimeString = Opaque<'OffsetDateTimeString', string>
 
+export interface LiteralDate {
+	year: number
+	month: number
+	day?: number
+}
+
+export interface LiteralTime {
+	hours: number
+	minutes: number
+	seconds?: number
+	milliseconds?: number
+}
+
+export interface LiteralDateTime extends LiteralDate, LiteralTime {
+	day: number
+}
+
+export interface LiteralOffsetDateTime extends LiteralDateTime {
+	/** Timezone offset in minutes */
+	offset: number
+}
+
 /**
  * A type that looks like a Moment of Dayjs, so we don't need to import or, more
  * particularly, export Moment or Dayjs types.
@@ -54,9 +76,13 @@ export function isOffsetDateTimeString(date: unknown): date is LocalDateString {
 	return date.match(/^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}(:[0-9]{2}(\.[0-9]{3})?)?(Z|(\+|-)[0-9]{2}:[0-9]{2})$/) !== null
 }
 
-export type DateLike = string | MomentOrDayjsLike | DateTimeLike | Date
+export type DateLike = string | MomentOrDayjsLike | DateTimeLike | Date | LiteralDate | LiteralDateTime | LiteralTime | LiteralOffsetDateTime
 
 function isDateTime(date: DateLike): date is DateTimeLike {
+	if (typeof date !== 'object') {
+		return false
+	}
+	
 	const anyDate = date as unknown as DateTimeLike
 	return (typeof anyDate.offset === 'number' &&
 		typeof anyDate.toMillis === 'function' &&
@@ -64,10 +90,94 @@ function isDateTime(date: DateLike): date is DateTimeLike {
 }
 
 function isMoment(date: DateLike): date is MomentOrDayjsLike {
+	if (typeof date !== 'object') {
+		return false
+	}
+	
 	const anyDate = date as unknown as MomentOrDayjsLike
 	if (typeof anyDate.isValid === 'function' &&
 		typeof anyDate.toDate === 'function' &&
 		typeof anyDate.utcOffset === 'function') {
+		return true
+	}
+
+	return false
+}
+
+function isLiteralDateTime(date: DateLike): date is LiteralDateTime {
+	if (typeof date !== 'object') {
+		return false
+	}
+
+	const anyDate = date as unknown as LiteralOffsetDateTime
+	if (typeof anyDate.year === 'number' &&
+		typeof anyDate.month === 'number' &&
+		typeof anyDate.day === 'number' &&
+		typeof anyDate.hours === 'number' &&
+		typeof anyDate.minutes === 'number' &&
+		(typeof anyDate.seconds === 'number' || typeof anyDate.seconds === 'undefined') &&
+		(typeof anyDate.milliseconds === 'number' || typeof anyDate.milliseconds === 'undefined') &&
+		typeof anyDate.offset === 'undefined') {
+		return true
+	}
+
+	return false
+}
+
+function isLiteralDate(date: DateLike): date is LiteralDate {
+	if (typeof date !== 'object') {
+		return false
+	}
+
+	const anyDate = date as unknown as LiteralOffsetDateTime
+	if (typeof anyDate.year === 'number' &&
+		typeof anyDate.month === 'number' &&
+		(typeof anyDate.day === 'number' || typeof anyDate.day === 'undefined') &&
+		typeof anyDate.hours === 'undefined' &&
+		typeof anyDate.minutes === 'undefined' &&
+		typeof anyDate.seconds === 'undefined' &&
+		typeof anyDate.milliseconds === 'undefined' &&
+		typeof anyDate.offset === 'undefined') {
+		return true
+	}
+
+	return false
+}
+
+function isLiteralTime(date: DateLike): date is LiteralTime {
+	if (typeof date !== 'object') {
+		return false
+	}
+
+	const anyDate = date as unknown as LiteralOffsetDateTime
+	if (typeof anyDate.year === 'undefined' &&
+		typeof anyDate.month === 'undefined' &&
+		typeof anyDate.day === 'undefined' &&
+		typeof anyDate.hours === 'number' &&
+		typeof anyDate.minutes === 'number' &&
+		(typeof anyDate.seconds === 'number' || typeof anyDate.seconds === 'undefined') &&
+		(typeof anyDate.milliseconds === 'number' || typeof anyDate.milliseconds === 'undefined') &&
+		typeof anyDate.offset === 'undefined') {
+		return true
+	}
+
+	return false
+}
+
+function isLiteralOffsetDateTime(date: DateLike): date is LiteralOffsetDateTime {
+	if (typeof date !== 'object') {
+		return false
+	}
+
+	const anyDate = date as unknown as LiteralOffsetDateTime
+	if (typeof anyDate.year === 'number' &&
+		typeof anyDate.month === 'number' &&
+		typeof anyDate.day === 'number' &&
+		typeof anyDate.hours === 'number' &&
+		typeof anyDate.minutes === 'number' &&
+		(typeof anyDate.seconds === 'number' || typeof anyDate.seconds === 'undefined') &&
+		(typeof anyDate.milliseconds === 'number' || typeof anyDate.milliseconds === 'undefined') &&
+		typeof anyDate.offset === 'number') {
 		return true
 	}
 
@@ -121,15 +231,15 @@ function timezoneString(date: InternalDate): string {
 	const hours = Math.floor(Math.abs(tz) / 60)
 	const minutes = Math.abs(tz) % 60
 
-	function pad2(num: number): string {
-		if (num < 10) {
-			return `0${num}`
-		} else {
-			return `${num}`
-		}
-	}
+	return (tz < 0 ? '-' : '+') + pad(hours, 2) + ':' + pad(minutes, 2)
+}
 
-	return (tz < 0 ? '-' : '+') + pad2(hours) + ':' + pad2(minutes)
+function pad(num: number, n: number): string {
+	let result = String(num)
+	while (result.length < n) {
+		result = '0' + result
+	}
+	return result
 }
 
 /**
@@ -205,6 +315,33 @@ function parse(date: DateLike): InternalDate {
 			time: date.toDate().getTime(),
 			offset: date.utcOffset(),
 		}
+	} else if (isLiteralOffsetDateTime(date)) {
+		const value = new Date(date.year, date.month - 1, date.day, date.hours, date.minutes, date.seconds || 0, date.milliseconds || 0)
+		const offset = value.getTimezoneOffset()
+		return {
+			time: value.getTime() - offset * 60000 - date.offset * 60000,
+			offset: date.offset,
+		}
+	} else if (isLiteralDateTime(date)) {
+		return {
+			time: new Date(date.year, date.month - 1, date.day, date.hours, date.minutes, date.seconds || 0, date.milliseconds || 0).getTime(),
+			offset: null,
+		}
+	} else if (isLiteralDate(date)) {
+		return {
+			time: new Date(date.year, date.month - 1, date.day || 1).getTime(),
+			offset: null,
+		}
+	} else if (isLiteralTime(date)) {
+		const value = new Date()
+		value.setHours(date.hours)
+		value.setMinutes(date.minutes)
+		value.setSeconds(date.seconds || 0)
+		value.setMilliseconds(date.milliseconds || 0)
+		return {
+			time: value.getTime(),
+			offset: null,
+		}
 	} else {
 		throw new Error(`Unsupported date argument: ${date}`)
 	}
@@ -245,18 +382,56 @@ function formatOffsetDateTimeString(date: InternalDate): string {
 	return toISODateTimeStringNoTimezone(date) + timezoneString(date)
 }
 
-export function toLocalDateTimeString(date: DateLike): LocalDateTimeString {
-	return formatLocalDateTimeString(parse(date)) as LocalDateTimeString
+export function toLocalDateTimeString(date: DateLike): LocalDateTimeString
+export function toLocalDateTimeString(year: number, month: number, day: number, hours: number, minutes: number, seconds?: number, milliseconds?: number): LocalDateTimeString
+export function toLocalDateTimeString(dateOrYear: DateLike | number, month?: number, day?: number, hours?: number, minutes?: number, seconds?: number, milliseconds?: number): LocalDateTimeString {
+	if (typeof dateOrYear === 'number') {
+		let result = `${pad(dateOrYear, 4)}-${pad(month || 1, 2)}-${pad(day || 1, 2)}T${pad(hours || 0, 2)}:${pad(minutes || 0, 2)}:${pad(seconds || 0, 2)}`
+		if (milliseconds && milliseconds > 0) {
+			result += `.${pad(milliseconds, 3)}`
+		}
+		return result as LocalDateTimeString
+	} else {
+		return formatLocalDateTimeString(parse(dateOrYear)) as LocalDateTimeString
+	}
 }
 
-export function toLocalDateString(date: DateLike): LocalDateString {
-	return formatLocalDateString(parse(date)) as LocalDateString
+export function toLocalDateString(date: DateLike): LocalDateString
+export function toLocalDateString(year: number, month: number, day?: number): LocalDateString
+export function toLocalDateString(dateOrYear: DateLike | number, month?: number, day?: number): LocalDateString {
+	if (typeof dateOrYear === 'number') {
+		return `${pad(dateOrYear, 4)}-${pad(month || 1, 2)}-${pad(day || 1, 2)}` as LocalDateString
+	} else {
+		return formatLocalDateString(parse(dateOrYear)) as LocalDateString
+	}
 }
 
-export function toLocalTimeString(date: DateLike): LocalTimeString {
-	return formatLocalTimeString(parse(date)) as LocalTimeString
+export function toLocalTimeString(date: DateLike): LocalTimeString
+export function toLocalTimeString(hours: number, minutes: number, seconds?: number, milliseconds?: number): LocalTimeString
+export function toLocalTimeString(dateOrHours: DateLike | number, minutes?: number, seconds?: number, milliseconds?: number): LocalTimeString {
+	if (typeof dateOrHours === 'number') {
+		let result = `${pad(dateOrHours || 0, 2)}:${pad(minutes || 0, 2)}:${pad(seconds || 0, 2)}`
+		if (milliseconds && milliseconds > 0) {
+			result += `.${pad(milliseconds, 3)}`
+		}
+		return result as LocalTimeString
+	} else {
+		return formatLocalTimeString(parse(dateOrHours)) as LocalTimeString
+	}
 }
 
-export function toOffsetDateTimeString(date: DateLike): OffsetDateTimeString {
-	return formatOffsetDateTimeString(parse(date)) as OffsetDateTimeString
+export function toOffsetDateTimeString(date: DateLike): OffsetDateTimeString
+export function toOffsetDateTimeString(year: number, month: number, day: number, hours: number, minutes: number, seconds?: number, milliseconds?: number, offset?: number): OffsetDateTimeString
+export function toOffsetDateTimeString(dateOrYear: DateLike | number, month?: number, day?: number, hours?: number, minutes?: number, seconds?: number, milliseconds?: number, offset?: number): OffsetDateTimeString {
+	if (typeof dateOrYear === 'number') {
+		const dateObject = new Date(dateOrYear, (month || 1) - 1, day || 1, hours, minutes, seconds, milliseconds)
+		let result = `${pad(dateOrYear, 4)}-${pad(month || 1, 2)}-${pad(day || 1, 2)}T${pad(hours || 0, 2)}:${pad(minutes || 0, 2)}:${pad(seconds || 0, 2)}`
+		if (milliseconds && milliseconds > 0) {
+			result += `.${pad(milliseconds, 3)}`
+		}
+		result += timezoneString({ time: dateObject.getTime(), offset: offset != undefined ? offset : null })
+		return result as OffsetDateTimeString
+	} else {
+		return formatOffsetDateTimeString(parse(dateOrYear)) as OffsetDateTimeString
+	}
 }
