@@ -1,10 +1,17 @@
-import { isLocalDateString, isLocalTimeString, toLocalDateString, toLocalTimeString, toOffsetDateTimeString } from '..'
+import { isLocalDateString, isLocalTimeString, toLocalDateString, toLocalDateTimeString, toLocalTimeString, toOffsetDateTimeString } from '..'
 
 test('toLocalDateString from string', () => {
 	expect(toLocalDateString('2020-01-01')).toEqual('2020-01-01')
 	expect(toLocalDateString('2020-12-31')).toEqual('2020-12-31')
 	expect(toLocalDateString('1970-01-01')).toEqual('1970-01-01')
 	expect(toLocalDateString('1969-12-31')).toEqual('1969-12-31')
+})
+
+test('toLocalDateTimeString from string', () => {
+	expect(toLocalDateTimeString('2020-01-01T01:23:45')).toEqual('2020-01-01T01:23:45')
+	expect(toLocalDateTimeString('2020-12-31T01:23:45')).toEqual('2020-12-31T01:23:45')
+	expect(toLocalDateTimeString('1970-01-01T01:23:45')).toEqual('1970-01-01T01:23:45')
+	expect(toLocalDateTimeString('1969-12-31T01:23:45')).toEqual('1969-12-31T01:23:45')
 })
 
 test('toLocalDateString from date', () => {
