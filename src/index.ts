@@ -1,7 +1,3 @@
-import type { DateTime } from 'luxon'
-import type { Moment } from 'moment'
-import type { Dayjs } from 'dayjs'
-
 type Opaque<K, T> = T & { __TYPE__: K }
 
 export type AnyDateString = LocalDateTimeString | LocalDateString | LocalTimeString | OffsetDateTimeString
@@ -9,6 +5,26 @@ export type LocalDateTimeString = Opaque<'LocalDateTimeString', string>
 export type LocalDateString = Opaque<'LocalDateString', string>
 export type LocalTimeString = Opaque<'LocalTimeString', string>
 export type OffsetDateTimeString = Opaque<'OffsetDateTimeString', string>
+
+/**
+ * A type that looks like a Moment of Dayjs, so we don't need to import or, more
+ * particularly, export Moment or Dayjs types.
+ */
+export interface MomentOrDayjsLike {
+	isValid(): boolean
+	toDate(): Date
+	utcOffset(): number
+}
+
+/**
+ * A type that looks like a Luxon DateTime, so we don't need to import or, more
+ * particularly, export Luxon types.
+ */
+export interface DateTimeLike {
+	offset: number
+	toISO(): string
+	toMillis(): number
+}
 
 export function isLocalDateTimeString(date: unknown): date is LocalDateTimeString {
 	if (typeof date !== 'string') {
@@ -38,20 +54,19 @@ export function isOffsetDateTimeString(date: unknown): date is LocalDateString {
 	return date.match(/^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}(:[0-9]{2}(\.[0-9]{3})?)?(Z|(\+|-)[0-9]{2}:[0-9]{2})$/) !== null
 }
 
-export type DateLike = string | Moment | Dayjs | DateTime | Date
+export type DateLike = string | MomentOrDayjsLike | DateTimeLike | Date
 
-function isDateTime(date: DateLike): date is DateTime {
-	const anyDate = date as unknown as DateTime
-	return (typeof anyDate.day === 'number' &&
-		typeof anyDate.daysInMonth === 'number' &&
-		typeof anyDate.zoneName === 'string' &&
+function isDateTime(date: DateLike): date is DateTimeLike {
+	const anyDate = date as unknown as DateTimeLike
+	return (typeof anyDate.offset === 'number' &&
+		typeof anyDate.toMillis === 'function' &&
 		typeof anyDate.toISO === 'function')
 }
 
-function isMoment(date: DateLike): date is Moment {
-	const anyDate = date as unknown as Moment
+function isMoment(date: DateLike): date is MomentOrDayjsLike {
+	const anyDate = date as unknown as MomentOrDayjsLike
 	if (typeof anyDate.isValid === 'function' &&
-		typeof anyDate.toISOString === 'function' &&
+		typeof anyDate.toDate === 'function' &&
 		typeof anyDate.utcOffset === 'function') {
 		return true
 	}
