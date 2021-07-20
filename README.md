@@ -10,28 +10,64 @@ Strings are the best representations for dates and times in JavaScript when you 
 npm install blind-date
 ```
 
-Example:
+```typescript
+import { toLocalDateString, toLocalTimeString, toOffsetDateTimeString, toLocalDateTimeString, LocalDateTimeString, LocalDateString, LocalTimeString, OffsetDateTimeString } from 'blind-date'
+```
+
+### with Moment.js
 
 ```typescript
-import { toLocalDateString, toLocalTimeString, toOffsetDateTimeString, toLocalDateTimeString, LocalDateTimeString, LocalDateString, LocalTimeString, OffsetDateTimeString } from '..'
 import moment from 'moment'
 
 const exampleMoment: moment.Moment = moment('22/1/2021 13:57', 'DD/MM/YYYY HH:mm')
 
-const localDate: LocalDateString = toLocalDateString(exampleMoment)
-// 2021-01-22
+const localDate: LocalDateString = toLocalDateString(exampleMoment) // 2021-01-22
 
-const localDateTime: LocalDateTimeString = toLocalDateTimeString(exampleMoment)
-// 2021-01-22T13:57:00
+const localDateTime: LocalDateTimeString = toLocalDateTimeString(exampleMoment) // 2021-01-22T13:57:00
 
-const localTime: LocalTimeString = toLocalTimeString(exampleMoment)
-// 13:57:00
+const localTime: LocalTimeString = toLocalTimeString(exampleMoment) // 13:57:00
 
-const offsetDateTime: OffsetDateTimeString = toOffsetDateTimeString(exampleMoment)
-// 2021-01-22T13:57:00+13:00
+const offsetDateTime: OffsetDateTimeString = toOffsetDateTimeString(exampleMoment) // 2021-01-22T13:57:00+13:00
+```
 
-const offsetDateTime2: OffsetDateTimeString = toOffsetDateTimeString('2021-01-22T13:57:00-08:00')
-// 2021-01-22T13:57:00-08:00
+### with strings
+
+```typescript
+const localDate: LocalDateString = toLocalDateString('2021-01-22')
+
+const localDateTime: LocalDateTimeString = toLocalDateTimeString('2021-01-22T13:57:00')
+
+const localTime: LocalTimeString = toLocalTimeString('13:57:00')
+
+const offsetDateTime: OffsetDateTimeString = toOffsetDateTimeString('2021-01-22T13:57:00-08:00')
+```
+
+### with literal values
+
+```typescript
+const localDate: LocalDateString = toLocalDateString(2021, 1, 22) // 2021-01-22
+
+const localDateTime: LocalDateTimeString = toLocalDateTimeString(2021, 1, 22, 13, 57, 0) // 2021-01-22T13:57:00
+
+const localTime: LocalTimeString = toLocalTimeString(13, 57) // 13:57:00
+
+const offsetDateTime: OffsetDateTimeString = toOffsetDateTimeString(2021, 1, 22, 13, 57, 0, 0, -480) // 2021-01-22T13:57:00-08:00
+```
+
+Or more explicitly:
+
+```typescript
+const localDate: LocalDateString = toLocalDateString({ year: 2021, month: 1, day: 22 }) // 2021-01-22
+
+const localDateTime: LocalDateTimeString = toLocalDateTimeString({
+	year: 2021, month: 1, day: 22, hours: 13, minutes: 57
+}) // 2021-01-22T13:57:00
+
+const localTime: LocalTimeString = toLocalTimeString({ hours: 13, minutes: 57 }) // 13:57:00
+
+const offsetDateTime: OffsetDateTimeString = toOffsetDateTimeString({
+	year: 2021, month: 1, day: 22, hours: 13, minutes: 57, offset: -480
+}) // 2021-01-22T13:57:00-08:00
 ```
 
 ## Compatibility
