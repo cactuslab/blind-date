@@ -6,24 +6,24 @@ export type LocalDateString = Opaque<'LocalDateString', string>
 export type LocalTimeString = Opaque<'LocalTimeString', string>
 export type OffsetDateTimeString = Opaque<'OffsetDateTimeString', string>
 
-export interface LiteralDate {
+export interface LiteralLocalDate {
 	year: number
 	month: number
 	day?: number
 }
 
-export interface LiteralTime {
+export interface LiteralLocalTime {
 	hours: number
 	minutes: number
 	seconds?: number
 	milliseconds?: number
 }
 
-export interface LiteralDateTime extends LiteralDate, LiteralTime {
+export interface LiteralLocalDateTime extends LiteralLocalDate, LiteralLocalTime {
 	day: number
 }
 
-export interface LiteralOffsetDateTime extends LiteralDateTime {
+export interface LiteralOffsetDateTime extends LiteralLocalDateTime {
 	/** Timezone offset in minutes */
 	offset: number
 }
@@ -76,7 +76,7 @@ export function isOffsetDateTimeString(date: unknown): date is LocalDateString {
 	return date.match(/^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}(:[0-9]{2}(\.[0-9]{3})?)?(Z|(\+|-)[0-9]{2}:[0-9]{2})$/) !== null
 }
 
-export type DateLike = string | MomentOrDayjsLike | DateTimeLike | Date | LiteralDate | LiteralDateTime | LiteralTime | LiteralOffsetDateTime
+export type DateLike = string | MomentOrDayjsLike | DateTimeLike | Date | LiteralLocalDate | LiteralLocalDateTime | LiteralLocalTime | LiteralOffsetDateTime
 
 function isDateTime(date: DateLike): date is DateTimeLike {
 	if (typeof date !== 'object') {
@@ -104,7 +104,7 @@ function isMoment(date: DateLike): date is MomentOrDayjsLike {
 	return false
 }
 
-function isLiteralDateTime(date: DateLike): date is LiteralDateTime {
+function isLiteralDateTime(date: DateLike): date is LiteralLocalDateTime {
 	if (typeof date !== 'object') {
 		return false
 	}
@@ -124,7 +124,7 @@ function isLiteralDateTime(date: DateLike): date is LiteralDateTime {
 	return false
 }
 
-function isLiteralDate(date: DateLike): date is LiteralDate {
+function isLiteralDate(date: DateLike): date is LiteralLocalDate {
 	if (typeof date !== 'object') {
 		return false
 	}
@@ -144,7 +144,7 @@ function isLiteralDate(date: DateLike): date is LiteralDate {
 	return false
 }
 
-function isLiteralTime(date: DateLike): date is LiteralTime {
+function isLiteralTime(date: DateLike): date is LiteralLocalTime {
 	if (typeof date !== 'object') {
 		return false
 	}
