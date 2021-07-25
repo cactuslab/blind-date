@@ -6,8 +6,12 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc -p tsconfig.prod.json",
-    "prepare": "npm run build && npm test",
+    "prepare": "npm run build",
+    "prepublishOnly": "npm run test:all",
     "test": "jest",
+    "test:all": "npm run test:nz && npm run test:us",
+    "test:nz": "TZ=Pacific/Auckland jest",
+    "test:us": "TZ=America/Los_Angeles jest",
     "watch": "tsc --watch"
   },
   "author": "Cactuslab",

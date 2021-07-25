@@ -1,4 +1,5 @@
 import { toLocalDateString, toLocalDateTimeString, toLocalTimeString, toOffsetDateTimeString } from '..'
+import { currentTimezone, offsetInJanuary } from './tz'
 
 test('toLocalDateString from local date literal', () => {
 	expect(toLocalDateString({ year: 2020, month: 1, day: 1 })).toEqual('2020-01-01')
@@ -34,4 +35,19 @@ test('toOffsetDateTimeString from offset date time literal', () => {
 	expect(toOffsetDateTimeString({ year: 2020, month: 1, day: 1, hours: 0, minutes: 0, seconds: 0, milliseconds: 0, offset: 720 })).toEqual('2020-01-01T00:00:00+12:00')
 	expect(toOffsetDateTimeString({ year: 2020, month: 1, day: 1, hours: 0, minutes: 0, seconds: 0, milliseconds: 0, offset: -360 })).toEqual('2020-01-01T00:00:00-06:00')
 	expect(toOffsetDateTimeString({ year: 1969, month: 12, day: 31, hours: 0, minutes: 0, seconds: 0, milliseconds: 0, offset: 780 })).toEqual('1969-12-31T00:00:00+13:00')
+})
+
+test('toOffsetDateTimeString from local date literal', () => {
+	const tz = currentTimezone()
+	expect(toOffsetDateTimeString({ year: 2020, month: 1, day: 1 })).toEqual(`2020-01-01T00:00:00${offsetInJanuary(tz)}`)
+})
+
+test('toOffsetDateTimeString from local date time literal', () => {
+	const tz = currentTimezone()
+	expect(toOffsetDateTimeString({ year: 2020, month: 1, day: 1, hours: 22, minutes: 1 })).toEqual(`2020-01-01T22:01:00${offsetInJanuary(tz)}`)
+})
+
+test('toLocalDateString from offset date time literal', () => {
+	expect(toLocalDateString({ year: 2020, month: 1, day: 1, hours: 1, minutes: 1, offset: -480 })).toEqual('2020-01-01')
+	expect(toLocalDateString({ year: 2020, month: 1, day: 1, hours: 1, minutes: 1, offset: 780 })).toEqual('2020-01-01')
 })
