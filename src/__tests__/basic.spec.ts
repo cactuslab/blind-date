@@ -15,13 +15,19 @@ test('toLocalDateTimeString from string', () => {
 })
 
 test('toLocalDateString from date', () => {
-	expect(toLocalDateString(new Date('2020-01-01'))).toEqual('2020-01-01')
-	expect(toLocalDateString(new Date('2020-12-31'))).toEqual('2020-12-31')
-	expect(toLocalDateString(new Date('1970-01-01'))).toEqual('1970-01-01')
-	expect(toLocalDateString(new Date('1969-12-31'))).toEqual('1969-12-31')
+	/* We construct the Dates using the (year, month, day) constructor so they are created in
+	   the local timezone. If we created them using the ('year-month-day') method, the Date assumes
+	   the input is in GMT, which confuses us as we assume all Dates were expressed in local time.
+	 */
+	expect(toLocalDateString(new Date(2020, 0, 1))).toEqual('2020-01-01')
+	expect(toLocalDateString(new Date(2020, 11, 31))).toEqual('2020-12-31')
+	expect(toLocalDateString(new Date(1970, 0, 1))).toEqual('1970-01-01')
+	expect(toLocalDateString(new Date(1969, 11, 31))).toEqual('1969-12-31')
 
 	expect(toLocalDateString(new Date('2020-12-05T13:37'))).toEqual('2020-12-05')
 	expect(toLocalDateString(new Date('2020-12-05T01:37'))).toEqual('2020-12-05')
+	expect(toLocalDateString(new Date('2020-12-05T23:37'))).toEqual('2020-12-05')
+	expect(toLocalDateString(new Date('2020-12-05T00:00'))).toEqual('2020-12-05')
 })
 
 test('toOffsetDateTimeString from string', () => {
