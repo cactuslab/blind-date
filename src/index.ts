@@ -43,6 +43,7 @@ export interface MomentOrDayjsLike {
  * particularly, export Luxon types.
  */
 export interface DateTimeLike {
+	isValid: boolean
 	offset: number
 	toISO(): string
 	toMillis(): number
@@ -192,6 +193,8 @@ interface InternalDate {
 	time: number
 	/* timezone in minutes; null means it's a local timestamp */
 	offset: number | null
+	valid: boolean
+	input: unknown
 }
 
 /**
@@ -256,6 +259,8 @@ function parse(date: DateLike): InternalDate {
 			return {
 				time: parsed.getTime(),
 				offset: null, /* local */
+				valid: true,
+				input: date,
 			}
 		}
 
@@ -270,50 +275,87 @@ function parse(date: DateLike): InternalDate {
 			return {
 				time: parsed.getTime(),
 				offset: null, /* local */
+				valid: true,
+				input: date,
 			}
 		}
 
 		/* Local date time */
-		const localDateTimeMatch = date.match(/^([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})(\.([0-9]{3}))?$/)
+		const localDateTimeMatch = date.match(/^([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2})(:([0-9]{2})(\.([0-9]{3}))?)?$/)
 		if (localDateTimeMatch) {
 			const parsed = new Date(Number(localDateTimeMatch[1]), Number(localDateTimeMatch[2]) - 1, Number(localDateTimeMatch[3]),
-				Number(localDateTimeMatch[4]), Number(localDateTimeMatch[5]), Number(localDateTimeMatch[6]))
-			if (localDateTimeMatch[8]) {
-				parsed.setMilliseconds(Number(localDateTimeMatch[8]))
+				Number(localDateTimeMatch[4]), Number(localDateTimeMatch[5]), Number(localDateTimeMatch[7] ? localDateTimeMatch[7] : 0))
+			if (localDateTimeMatch[9]) {
+				parsed.setMilliseconds(Number(localDateTimeMatch[9]))
 			}
 			return {
 				time: parsed.getTime(),
 				offset: null, /* local */
+				valid: true,
+				input: date,
 			}
 		}
 
-		/* General parsing */
-		const parsed = new Date(date)
-		if (isNaN(parsed.getTime())) {
-			throw new Error(`Invalid date string: ${date}`)
+		/* Offset date time */
+		if (isOffsetDateTimeString(date)) {
+			return {
+				time: new Date(date).getTime(),
+				offset: timezoneFromString(date),
+				valid: true,
+				input: date,
+			}
 		}
 
 		return {
-			time: new Date(date).getTime(),
-			offset: timezoneFromString(date),
+			time: NaN,
+			offset: null,
+			valid: false,
+			input: date,
 		}
 	} else if (isDateTime(date)) {
+		if (!date.isValid) {
+			return {
+				time: NaN,
+				offset: null,
+				valid: false,
+				input: date,
+			}
+		}
 		return {
 			time: date.toMillis(),
 			offset: date.offset,
+			valid: true,
+			input: date,
 		}
 	} else if (date instanceof Date) {
+		if (isNaN(date.getTime())) {
+			return {
+				time: NaN,
+				offset: null,
+				valid: false,
+				input: date,
+			}
+		}
 		return {
 			time: date.getTime(),
 			offset: null,
+			valid: true,
+			input: date,
 		}
 	} else if (isMoment(date)) {
 		if (!date.isValid()) {
-			throw new Error('Invalid date object provided')
+			return {
+				time: NaN,
+				offset: null,
+				valid: false,
+				input: date,
+			}
 		}
 		return {
 			time: date.toDate().getTime(),
 			offset: date.utcOffset(),
+			valid: true,
+			input: date,
 		}
 	} else if (isLiteralOffsetDateTime(date)) {
 		const value = new Date(date.year, date.month - 1, date.day, date.hours, date.minutes, date.seconds || 0, date.milliseconds || 0)
@@ -321,16 +363,22 @@ function parse(date: DateLike): InternalDate {
 		return {
 			time: value.getTime() - offset * 60000 - date.offset * 60000,
 			offset: date.offset,
+			valid: true,
+			input: date,
 		}
 	} else if (isLiteralDateTime(date)) {
 		return {
 			time: new Date(date.year, date.month - 1, date.day, date.hours, date.minutes, date.seconds || 0, date.milliseconds || 0).getTime(),
 			offset: null,
+			valid: true,
+			input: date,
 		}
 	} else if (isLiteralDate(date)) {
 		return {
 			time: new Date(date.year, date.month - 1, date.day || 1).getTime(),
 			offset: null,
+			valid: true,
+			input: date,
 		}
 	} else if (isLiteralTime(date)) {
 		const value = new Date()
@@ -341,13 +389,24 @@ function parse(date: DateLike): InternalDate {
 		return {
 			time: value.getTime(),
 			offset: null,
+			valid: true,
+			input: date,
 		}
 	} else {
-		throw new Error(`Unsupported date argument: ${date}`)
+		return {
+			time: NaN,
+			offset: null,
+			valid: false,
+			input: date,
+		}
 	}
 }
 
 function toISODateTimeStringNoTimezone(date: InternalDate): string {
+	if (!date.valid) {
+		throw new Error(`Invalid Date: ${date.input}`)
+	}
+
 	const tz = date.offset !== null ? date.offset : -new Date(date.time).getTimezoneOffset()
 	return new Date(date.time + tz * 60000).toISOString()
 		.replace(/Z$/, '')
@@ -429,9 +488,22 @@ export function toOffsetDateTimeString(dateOrYear: DateLike | number, month?: nu
 		if (milliseconds && milliseconds > 0) {
 			result += `.${pad(milliseconds, 3)}`
 		}
-		result += timezoneString({ time: dateObject.getTime(), offset: offset != undefined ? offset : null })
+		result += timezoneString({ time: dateObject.getTime(), offset: offset != undefined ? offset : null, valid: true, input: dateObject })
 		return result as OffsetDateTimeString
 	} else {
 		return formatOffsetDateTimeString(parse(dateOrYear)) as OffsetDateTimeString
 	}
+}
+
+export function toDate(date: DateLike): Date {
+	const parsed = parse(date)
+	if (!parsed.valid) {
+		throw new Error(`Invalid Date: ${parsed.input}`)
+	}
+	return new Date(parsed.time)
+}
+
+export function isValid(date: DateLike): boolean {
+	const parsed = parse(date)
+	return parsed.valid
 }
