@@ -77,7 +77,7 @@ export function isOffsetDateTimeString(date: unknown): date is LocalDateString {
 	return date.match(/^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}(:[0-9]{2}(\.[0-9]{3})?)?(Z|(\+|-)[0-9]{2}:[0-9]{2})$/) !== null
 }
 
-export type DateLike = string | MomentOrDayjsLike | DateTimeLike | Date | LiteralLocalDate | LiteralLocalDateTime | LiteralLocalTime | LiteralOffsetDateTime
+export type DateLike = string | number | MomentOrDayjsLike | DateTimeLike | Date | LiteralLocalDate | LiteralLocalDateTime | LiteralLocalTime | LiteralOffsetDateTime
 
 function isDateTime(date: DateLike): date is DateTimeLike {
 	if (typeof date !== 'object') {
@@ -310,6 +310,13 @@ function parse(date: DateLike): InternalDate {
 			time: NaN,
 			offset: null,
 			valid: false,
+			input: date,
+		}
+	} else if (typeof date === 'number') {
+		return {
+			time: date,
+			offset: null,
+			valid: !isNaN(date),
 			input: date,
 		}
 	} else if (isDateTime(date)) {
