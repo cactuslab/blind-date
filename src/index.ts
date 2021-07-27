@@ -388,13 +388,10 @@ function parse(date: DateLike): InternalDate {
 			input: date,
 		}
 	} else if (isLiteralTime(date)) {
-		const value = new Date()
-		value.setHours(date.hours)
-		value.setMinutes(date.minutes)
-		value.setSeconds(date.seconds || 0)
-		value.setMilliseconds(date.milliseconds || 0)
+		/* Use a known date so there are no daylight savings issues (hopefully there were no daylight savings changes on that day) */
+		const millis = new Date(1970, 0, 1, date.hours, date.minutes, date.seconds || 0, date.milliseconds || 0).getTime()
 		return {
-			time: value.getTime(),
+			time: millis,
 			offset: null,
 			valid: true,
 			input: date,
@@ -492,21 +489,20 @@ export function toLocalDateString(date: DateLike): LocalDateString
 export function toLocalDateString(year: number, month: number, day?: number): LocalDateString
 export function toLocalDateString(dateOrYear: DateLike | number, month?: number, day?: number): LocalDateString {
 	if (typeof dateOrYear === 'number') {
-		return `${pad(dateOrYear, 4)}-${pad(month || 1, 2)}-${pad(day || 1, 2)}` as LocalDateString
-	} else {
-		return formatLocalDateString(parse(dateOrYear)) as LocalDateString
+		dateOrYear = new Date(dateOrYear, month !== undefined ? month - 1 : 0, typeof day !== undefined ? day : 1)
 	}
+	return formatLocalDateString(parse(dateOrYear)) as LocalDateString
 }
 
 export function toLocalTimeString(date: DateLike): LocalTimeString
 export function toLocalTimeString(hours: number, minutes: number, seconds?: number, milliseconds?: number): LocalTimeString
 export function toLocalTimeString(dateOrHours: DateLike | number, minutes?: number, seconds?: number, milliseconds?: number): LocalTimeString {
 	if (typeof dateOrHours === 'number') {
-		let result = `${pad(dateOrHours || 0, 2)}:${pad(minutes || 0, 2)}:${pad(seconds || 0, 2)}`
-		if (milliseconds && milliseconds > 0) {
-			result += `.${pad(milliseconds, 3)}`
-		}
-		return result as LocalTimeString
+		/* Use UTC so there are no daylight savings issues */
+		const millis = Date.UTC(1970, 0, 1, dateOrHours || 0, minutes || 0, seconds || 0, milliseconds || 0)
+		const parsed = parse(millis)
+		parsed.offset = 0
+		return formatLocalTimeString(parsed) as LocalTimeString
 	} else {
 		return formatLocalTimeString(parse(dateOrHours)) as LocalTimeString
 	}
@@ -516,13 +512,52 @@ export function toOffsetDateTimeString(date: DateLike): OffsetDateTimeString
 export function toOffsetDateTimeString(year: number, month: number, day: number, hours: number, minutes: number, seconds?: number, milliseconds?: number, offset?: number): OffsetDateTimeString
 export function toOffsetDateTimeString(dateOrYear: DateLike | number, month?: number, day?: number, hours?: number, minutes?: number, seconds?: number, milliseconds?: number, offset?: number): OffsetDateTimeString {
 	if (typeof dateOrYear === 'number') {
-		const dateObject = new Date(dateOrYear, (month || 1) - 1, day || 1, hours, minutes, seconds, milliseconds)
-		let result = `${pad(dateOrYear, 4)}-${pad(month || 1, 2)}-${pad(day || 1, 2)}T${pad(hours || 0, 2)}:${pad(minutes || 0, 2)}:${pad(seconds || 0, 2)}`
-		if (milliseconds && milliseconds > 0) {
-			result += `.${pad(milliseconds, 3)}`
+		if (offset !== undefined) {
+			/* When there's an explicit offset we use UTC to avoid any daylight savings rules */
+			let millis = Date.UTC(
+				dateOrYear,
+				month !== undefined ? month - 1 : 0,
+				day !== undefined ? day : 1,
+				hours,
+				minutes,
+				seconds,
+				milliseconds
+			)
+
+			/* Correct for the given offset */
+			millis -= offset * 60000
+			
+			const parsed = parse(millis)
+			parsed.offset = offset
+
+			let result = toLocalISODateTimeString(parsed)
+			result += timezoneString({
+				time: millis,
+				offset,
+				valid: true,
+				input: millis,
+			})
+			return result as OffsetDateTimeString
+		} else {
+			/* Create a local date */
+			const date = new Date(
+				dateOrYear,
+				month !== undefined ? month - 1 : 0,
+				day !== undefined ? day : 1,
+				hours || 0,
+				minutes || 0,
+				seconds || 0,
+				milliseconds || 0
+			)
+			let result = toLocalISODateTimeString(parse(date))
+			result += timezoneString({
+				time: date.getTime(),
+				offset: null,
+				valid: true,
+				input: date,
+			})
+			return result as OffsetDateTimeString
 		}
-		result += timezoneString({ time: dateObject.getTime(), offset: offset != undefined ? offset : null, valid: true, input: dateObject })
-		return result as OffsetDateTimeString
 	} else {
 		return formatOffsetDateTimeString(parse(dateOrYear)) as OffsetDateTimeString
 	}

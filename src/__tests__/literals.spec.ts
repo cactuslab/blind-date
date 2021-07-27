@@ -1,5 +1,5 @@
 import { toLocalDateString, toLocalDateTimeString, toLocalTimeString, toOffsetDateTimeString } from '..'
-import { currentTimezone, offsetInJanuary } from './tz'
+import { currentTimezone, offsetInJanuary, offsetInJanuary1970, offsetInJuly, Timezone } from './tz'
 
 test('toLocalDateString from local date literal', () => {
 	expect(toLocalDateString({ year: 2020, month: 1, day: 1 })).toEqual('2020-01-01')
@@ -50,4 +50,60 @@ test('toOffsetDateTimeString from local date time literal', () => {
 test('toLocalDateString from offset date time literal', () => {
 	expect(toLocalDateString({ year: 2020, month: 1, day: 1, hours: 1, minutes: 1, offset: -480 })).toEqual('2020-01-01')
 	expect(toLocalDateString({ year: 2020, month: 1, day: 1, hours: 1, minutes: 1, offset: 780 })).toEqual('2020-01-01')
+})
+
+test('toLocalDateString from local time literal', () => {
+	expect(toLocalDateString({ hours: 1, minutes: 1 })).toEqual('1970-01-01')
+})
+
+test('toLocalDateTimeString from local time literal', () => {
+	expect(toLocalDateTimeString({ hours: 1, minutes: 1 })).toEqual('1970-01-01T01:01:00')
+})
+
+test('toOffsetDateTimeString from local time literal', () => {
+	const tz = currentTimezone()
+	expect(toOffsetDateTimeString({ hours: 1, minutes: 1 })).toEqual(`1970-01-01T01:01:00${offsetInJanuary1970(tz)}`)
+})
+
+test('toOffsetDateTimeString from literal around NZ daylight savings', () => {
+	const tz = currentTimezone()
+	if (tz !== Timezone.PacificAuckland) {
+		return
+	}
+
+	/* This is just before daylight savings time starts in NZ */
+	expect(toOffsetDateTimeString(2021, 9, 26, 1, 59, 59, 0)).toEqual(`2021-09-26T01:59:59${offsetInJuly(tz)}`)
+	/* This is just after daylight savings time starts in NZ, so there is no 2AM */
+	expect(toOffsetDateTimeString(2021, 9, 26, 2, 0, 0)).toEqual(`2021-09-26T03:00:00${offsetInJanuary(tz)}`)
+	expect(toOffsetDateTimeString(2021, 9, 26, 2, 59)).toEqual(`2021-09-26T03:59:00${offsetInJanuary(tz)}`)
+	expect(toOffsetDateTimeString(2021, 9, 26, 3, 0, 0, 0)).toEqual(`2021-09-26T03:00:00${offsetInJanuary(tz)}`)
+	expect(toOffsetDateTimeString(2021, 9, 26, 3, 59)).toEqual(`2021-09-26T03:59:00${offsetInJanuary(tz)}`)
+	expect(toOffsetDateTimeString(2021, 9, 26, 4, 0, 0, 0)).toEqual(`2021-09-26T04:00:00${offsetInJanuary(tz)}`)
+})
+
+test('toOffsetDateTimeString from literal around LA daylight savings', () => {
+	const tz = currentTimezone()
+	if (tz !== Timezone.AmericaLosAngeles) {
+		return
+	}
+
+	/* This is just before daylight savings time starts in LA */
+	expect(toOffsetDateTimeString(2021, 3, 14, 1, 59, 59, 0)).toEqual(`2021-03-14T01:59:59${offsetInJanuary(tz)}`)
+	/* This is just after daylight savings time starts in LA, so there is no 2AM */
+	expect(toOffsetDateTimeString(2021, 3, 14, 2, 0, 0)).toEqual(`2021-03-14T03:00:00${offsetInJuly(tz)}`)
+	expect(toOffsetDateTimeString(2021, 3, 14, 2, 59, 0, 0)).toEqual(`2021-03-14T03:59:00${offsetInJuly(tz)}`)
+	expect(toOffsetDateTimeString(2021, 3, 14, 3, 0, 0, 0)).toEqual(`2021-03-14T03:00:00${offsetInJuly(tz)}`)
+	expect(toOffsetDateTimeString(2021, 3, 14, 3, 59)).toEqual(`2021-03-14T03:59:00${offsetInJuly(tz)}`)
+	expect(toOffsetDateTimeString(2021, 3, 14, 4, 0)).toEqual(`2021-03-14T04:00:00${offsetInJuly(tz)}`)
+})
+
+test('toOffsetDateTimeString from literal with explicit offset around NZ daylight savings', () => {
+	/* This is just before daylight savings time starts in NZ */
+	expect(toOffsetDateTimeString(2021, 9, 26, 1, 59, 59, 0, 720)).toEqual('2021-09-26T01:59:59+12:00')
+	/* This is just after daylight savings time starts in NZ, so there is no 2AM, but we're forcing the offset, so there is! */
+	expect(toOffsetDateTimeString(2021, 9, 26, 2, 0, 0, 0, 720)).toEqual('2021-09-26T02:00:00+12:00')
+	expect(toOffsetDateTimeString(2021, 9, 26, 2, 59, 0, 0, 720)).toEqual('2021-09-26T02:59:00+12:00')
+	expect(toOffsetDateTimeString(2021, 9, 26, 3, 0, 0, 0, 720)).toEqual('2021-09-26T03:00:00+12:00')
+	expect(toOffsetDateTimeString(2021, 9, 26, 3, 59, 0, 0, 720)).toEqual('2021-09-26T03:59:00+12:00')
+	expect(toOffsetDateTimeString(2021, 9, 26, 4, 0, 0, 0, 720)).toEqual('2021-09-26T04:00:00+12:00')
 })
