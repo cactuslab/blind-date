@@ -427,9 +427,19 @@ function assertValidDate(date: InternalDate, purpose: string) {
 	}
 }
 
-function toISODateTimeStringNoTimezone(date: InternalDate): string {
+/**
+ * Returns an ISO string for the given date as a local date time in the timezone
+ * offset given in the date
+ * @param date 
+ * @returns 
+ */
+function toLocalISODateTimeString(date: InternalDate): string {
 	assertValidDate(date, 'to format a string')
 
+	/* In order to make a local date time string in the given timezone offset we bump the time
+	   in millis by the offset, then format an ISO string (which will be UTC), and then remove
+	   the timezone specifier so the timezone can be added later.
+	 */
 	const tz = date.offset !== null ? date.offset : -new Date(date.time).getTimezoneOffset()
 	return new Date(date.time + tz * 60000).toISOString()
 		.replace(/Z$/, '')
@@ -437,11 +447,11 @@ function toISODateTimeStringNoTimezone(date: InternalDate): string {
 }
 
 function formatLocalDateTimeString(date: InternalDate): string {
-	return toISODateTimeStringNoTimezone(date)
+	return toLocalISODateTimeString(date)
 }
 
 function formatLocalDateString(date: InternalDate): string {
-	const dateString = toISODateTimeStringNoTimezone(date)
+	const dateString = toLocalISODateTimeString(date)
 	const i = dateString.indexOf('T')
 	if (i !== -1) {
 		return dateString.substring(0, i)
@@ -451,7 +461,7 @@ function formatLocalDateString(date: InternalDate): string {
 }
 
 function formatLocalTimeString(date: InternalDate): string {
-	const dateString = toISODateTimeStringNoTimezone(date)
+	const dateString = toLocalISODateTimeString(date)
 	const i = dateString.indexOf('T')
 	if (i !== -1) {
 		return dateString.substring(i + 1)
@@ -461,7 +471,7 @@ function formatLocalTimeString(date: InternalDate): string {
 }
 
 function formatOffsetDateTimeString(date: InternalDate): string {
-	return toISODateTimeStringNoTimezone(date) + timezoneString(date)
+	return toLocalISODateTimeString(date) + timezoneString(date)
 }
 
 export function toLocalDateTimeString(date: DateLike): LocalDateTimeString
