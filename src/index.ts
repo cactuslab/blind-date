@@ -194,7 +194,7 @@ interface InternalDate {
 	/* timezone in minutes; null means it's a local timestamp */
 	offset: number | null
 	valid: boolean
-	input: unknown
+	input: DateLike
 }
 
 /**
@@ -402,10 +402,26 @@ function parse(date: DateLike): InternalDate {
 	}
 }
 
-function toISODateTimeStringNoTimezone(date: InternalDate): string {
-	if (!date.valid) {
-		throw new Error(`Invalid Date: ${date.input}`)
+function assertValidDate(date: InternalDate, purpose: string) {
+	if (date.valid) {
+		return
 	}
+
+	if (isDateTime(date.input)) {
+		throw new Error(`blind-date cannot use invalid DateTime ${purpose}: ${date.input}`)
+	} else if (isMoment(date.input)) {
+		throw new Error(`blind-date cannot use invalid Moment ${purpose}: ${date.input}`)
+	} else if (typeof date.input === 'object') {
+		throw new Error(`blind-date cannot use invalid input ${purpose}: ${JSON.stringify(date.input)}`)
+	} else if (typeof date.input === 'string') {
+		throw new Error(`blind-date cannot use invalid input ${purpose}: ${date.input}`)
+	} else {
+		throw new Error(`blind-date cannot use invalid input ${purpose}: ${date.input}`)
+	}
+}
+
+function toISODateTimeStringNoTimezone(date: InternalDate): string {
+	assertValidDate(date, 'to format a string')
 
 	const tz = date.offset !== null ? date.offset : -new Date(date.time).getTimezoneOffset()
 	return new Date(date.time + tz * 60000).toISOString()
@@ -423,7 +439,7 @@ function formatLocalDateString(date: InternalDate): string {
 	if (i !== -1) {
 		return dateString.substring(0, i)
 	} else {
-		throw new Error(`Invalid ISO date: ${dateString}`)
+		throw new Error(`blind-date produced an invalid ISO date: ${dateString}`)
 	}
 }
 
@@ -433,7 +449,7 @@ function formatLocalTimeString(date: InternalDate): string {
 	if (i !== -1) {
 		return dateString.substring(i + 1)
 	} else {
-		throw new Error(`Invalid ISO date: ${dateString}`)
+		throw new Error(`blind-date produced an invalid ISO date: ${dateString}`)
 	}
 }
 
@@ -497,9 +513,7 @@ export function toOffsetDateTimeString(dateOrYear: DateLike | number, month?: nu
 
 export function toDate(date: DateLike): Date {
 	const parsed = parse(date)
-	if (!parsed.valid) {
-		throw new Error(`Invalid Date: ${parsed.input}`)
-	}
+	assertValidDate(parsed, 'to create a Date')
 	return new Date(parsed.time)
 }
 
