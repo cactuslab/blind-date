@@ -7,14 +7,14 @@ test('toLocalDateString from numbers', () => {
 	expect(toLocalDateString(1969, 12, 31)).toEqual('1969-12-31')
 })
 
-test('toLocalDateTimeString from string', () => {
+test('toLocalDateTimeString from numbers', () => {
 	expect(toLocalDateTimeString(2020, 1, 1, 1, 23, 45)).toEqual('2020-01-01T01:23:45')
 	expect(toLocalDateTimeString(2020, 12, 31, 1, 23, 45)).toEqual('2020-12-31T01:23:45')
 	expect(toLocalDateTimeString(1970, 1, 1, 1, 23, 45)).toEqual('1970-01-01T01:23:45')
 	expect(toLocalDateTimeString(1969, 12, 31, 1, 23, 45)).toEqual('1969-12-31T01:23:45')
 })
 
-test('toLocalTimeString from string', () => {
+test('toLocalTimeString from numbers', () => {
 	expect(toLocalTimeString(12, 1)).toEqual('12:01:00')
 	expect(toLocalTimeString(12, 1, 0)).toEqual('12:01:00')
 	expect(toLocalTimeString(12, 1, 1)).toEqual('12:01:01')
@@ -24,7 +24,7 @@ test('toLocalTimeString from string', () => {
 	expect(toLocalTimeString(17, 59)).toEqual('17:59:00')
 })
 
-test('toOffsetDateTimeString from string', () => {
+test('toOffsetDateTimeString from numbers', () => {
 	expect(toOffsetDateTimeString(2020, 1, 1, 0, 0, 0, 0, 0)).toEqual('2020-01-01T00:00:00Z')
 	expect(toOffsetDateTimeString(1970, 1, 1, 0, 0, 0, 0, 0)).toEqual('1970-01-01T00:00:00Z')
 	expect(toOffsetDateTimeString(1969, 12, 31, 0, 0, 0, 0, 0)).toEqual('1969-12-31T00:00:00Z')
