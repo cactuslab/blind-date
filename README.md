@@ -21,13 +21,37 @@ import moment from 'moment'
 
 const exampleMoment: moment.Moment = moment('22/1/2021 13:57', 'DD/MM/YYYY HH:mm')
 
-const localDate: LocalDateString = toLocalDateString(exampleMoment) // 2021-01-22
+const localDate: LocalDateString = toLocalDateString(exampleMoment)
+// 2021-01-22
 
-const localDateTime: LocalDateTimeString = toLocalDateTimeString(exampleMoment) // 2021-01-22T13:57:00
+const localDateTime: LocalDateTimeString = toLocalDateTimeString(exampleMoment)
+// 2021-01-22T13:57:00
 
-const localTime: LocalTimeString = toLocalTimeString(exampleMoment) // 13:57:00
+const localTime: LocalTimeString = toLocalTimeString(exampleMoment)
+// 13:57:00
 
-const offsetDateTime: OffsetDateTimeString = toOffsetDateTimeString(exampleMoment) // 2021-01-22T13:57:00+13:00
+const offsetDateTime: OffsetDateTimeString = toOffsetDateTimeString(exampleMoment)
+// 2021-01-22T13:57:00+13:00
+```
+
+### with Luxon
+
+```typescript
+import { DateTime } from 'luxon'
+
+const exampleDateTime: DateTime = DateTime.local(2021, 1, 22, 13, 57)
+
+const localDate: LocalDateString = toLocalDateString(exampleDateTime)
+// 2021-01-22
+
+const localDateTime: LocalDateTimeString = toLocalDateTimeString(exampleDateTime)
+// 2021-01-22T13:57:00
+
+const localTime: LocalTimeString = toLocalTimeString(exampleDateTime)
+// 13:57:00
+
+const offsetDateTime: OffsetDateTimeString = toOffsetDateTimeString(exampleDateTime)
+// 2021-01-22T13:57:00+13:00
 ```
 
 ### with strings
@@ -45,29 +69,55 @@ const offsetDateTime: OffsetDateTimeString = toOffsetDateTimeString('2021-01-22T
 ### with literal values
 
 ```typescript
-const localDate: LocalDateString = toLocalDateString(2021, 1, 22) // 2021-01-22
+const localDate: LocalDateString = toLocalDateString(2021, 1, 22)
+// 2021-01-22
 
-const localDateTime: LocalDateTimeString = toLocalDateTimeString(2021, 1, 22, 13, 57, 0) // 2021-01-22T13:57:00
+const localDateTime: LocalDateTimeString = toLocalDateTimeString(2021, 1, 22, 13, 57, 0)
+// 2021-01-22T13:57:00
 
-const localTime: LocalTimeString = toLocalTimeString(13, 57) // 13:57:00
+const localTime: LocalTimeString = toLocalTimeString(13, 57)
+// 13:57:00
 
-const offsetDateTime: OffsetDateTimeString = toOffsetDateTimeString(2021, 1, 22, 13, 57, 0, 0, -480) // 2021-01-22T13:57:00-08:00
+const offsetDateTime: OffsetDateTimeString = toOffsetDateTimeString(2021, 1, 22, 13, 57, 0, 0, -480)
+// 2021-01-22T13:57:00-08:00
 ```
 
 Or more explicitly:
 
 ```typescript
-const localDate: LocalDateString = toLocalDateString({ year: 2021, month: 1, day: 22 }) // 2021-01-22
+const localDate: LocalDateString = toLocalDateString({ year: 2021, month: 1, day: 22 })
+// 2021-01-22
 
 const localDateTime: LocalDateTimeString = toLocalDateTimeString({
 	year: 2021, month: 1, day: 22, hours: 13, minutes: 57
-}) // 2021-01-22T13:57:00
+})
+// 2021-01-22T13:57:00
 
-const localTime: LocalTimeString = toLocalTimeString({ hours: 13, minutes: 57 }) // 13:57:00
+const localTime: LocalTimeString = toLocalTimeString({ hours: 13, minutes: 57 })
+// 13:57:00
 
 const offsetDateTime: OffsetDateTimeString = toOffsetDateTimeString({
 	year: 2021, month: 1, day: 22, hours: 13, minutes: 57, offset: -480
-}) // 2021-01-22T13:57:00-08:00
+})
+// 2021-01-22T13:57:00-08:00
+```
+
+### with millis
+
+```typescript
+const millis = 1611277020000
+
+const localDate: LocalDateString = toLocalDateString(millis)
+// 2021-01-22
+
+const localDateTime: LocalDateTimeString = toLocalDateTimeString(millis)
+// 2021-01-22T13:57:00
+
+const localTime: LocalTimeString = toLocalTimeString(millis)
+// 13:57:00
+
+const offsetDateTime: OffsetDateTimeString = toOffsetDateTimeString(millis)
+// 2021-01-22T13:57:00+13:00
 ```
 
 ## Compatibility
