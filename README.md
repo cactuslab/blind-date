@@ -11,7 +11,16 @@ npm install blind-date
 ```
 
 ```typescript
-import { toLocalDateString, toLocalTimeString, toOffsetDateTimeString, toLocalDateTimeString, LocalDateTimeString, LocalDateString, LocalTimeString, OffsetDateTimeString } from 'blind-date'
+import {
+	toLocalDateString,
+	toLocalTimeString,
+	toOffsetDateTimeString,
+	toLocalDateTimeString,
+	LocalDateTimeString,
+	LocalDateString,
+	LocalTimeString,
+	OffsetDateTimeString
+} from 'blind-date'
 ```
 
 ### with Moment.js
@@ -82,7 +91,7 @@ const offsetDateTime: OffsetDateTimeString = toOffsetDateTimeString(2021, 1, 22,
 // 2021-01-22T13:57:00-08:00
 ```
 
-Or more explicitly:
+Or using object literals:
 
 ```typescript
 const localDate: LocalDateString = toLocalDateString({ year: 2021, month: 1, day: 22 })
@@ -154,10 +163,10 @@ The values are still `string`s. The `typeof` still returns `string`, but TypeScr
 
 ## Conversion functions
 
-We provide conversion functions in order to create the various opaque types, either from ISO8601 formatted strings or from a [`Moment`](https://momentjs.com), `DateTime` from [Luxon](https://moment.github.io/luxon/), [`DayJs`](https://day.js.org), or JavaScript `Date`.
+We provide conversion functions in order to create the various opaque types from: ISO8601 formatted strings, a UNIX epoch timestamp in millis, a [`Moment`](https://momentjs.com), [`DayJs`](https://day.js.org), `DateTime` from [Luxon](https://moment.github.io/luxon/), JavaScript `Date`, and Blind Date's own object literals.
 
 ```typescript
-export type DateLike = string | moment.Moment | DateTime | Dayjs | Date;
+export type DateLike = string | number | moment.Moment | Dayjs | DateTime | Date | LiteralLocalDate | LiteralLocalDateTime | LiteralLocalTime | LiteralOffsetDateTime
 
 export function toLocalDateTimeString(date: DateLike): LocalDateTimeString;
 export function toLocalDateString(date: DateLike): LocalDateString;
@@ -199,3 +208,23 @@ function handleDateTime(value: string) {
 	}
 }
 ```
+
+## Conversion to JavaScript Date
+
+Blind Date can convert any date format it supports, including its own string types, to a JavaScript `Date`:
+
+```typescript
+export function toDate(date: DateLike): Date
+```
+
+## Validity
+
+Some date formats can represent invalid dates, such as `moment`, `DateTime` and JavaScript's `Date` (when the `time` is `NaN`).
+Blind Date can test any date format it supports to check if it's valid.
+
+```typescript
+export function isValid(date: DateLike): boolean
+```
+
+Note that Blind Date cannot represent an invalid date as a string, so an error will be thrown if an invalid date is passed
+to any of the `to...` functions.
