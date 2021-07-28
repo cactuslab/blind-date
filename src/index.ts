@@ -474,7 +474,7 @@ function formatOffsetDateTimeString(date: InternalDate): string {
 export function toLocalDateTimeString(date: DateLike): LocalDateTimeString
 export function toLocalDateTimeString(year: number, month: number, day: number, hours: number, minutes: number, seconds?: number, milliseconds?: number): LocalDateTimeString
 export function toLocalDateTimeString(dateOrYear: DateLike | number, month?: number, day?: number, hours?: number, minutes?: number, seconds?: number, milliseconds?: number): LocalDateTimeString {
-	if (typeof dateOrYear === 'number') {
+	if (typeof dateOrYear === 'number' && typeof month === 'number') {
 		let result = `${pad(dateOrYear, 4)}-${pad(month || 1, 2)}-${pad(day || 1, 2)}T${pad(hours || 0, 2)}:${pad(minutes || 0, 2)}:${pad(seconds || 0, 2)}`
 		if (milliseconds && milliseconds > 0) {
 			result += `.${pad(milliseconds, 3)}`
@@ -488,7 +488,7 @@ export function toLocalDateTimeString(dateOrYear: DateLike | number, month?: num
 export function toLocalDateString(date: DateLike): LocalDateString
 export function toLocalDateString(year: number, month: number, day?: number): LocalDateString
 export function toLocalDateString(dateOrYear: DateLike | number, month?: number, day?: number): LocalDateString {
-	if (typeof dateOrYear === 'number') {
+	if (typeof dateOrYear === 'number' && typeof month === 'number') {
 		dateOrYear = new Date(dateOrYear, month !== undefined ? month - 1 : 0, typeof day !== undefined ? day : 1)
 	}
 	return formatLocalDateString(parse(dateOrYear)) as LocalDateString
@@ -497,7 +497,7 @@ export function toLocalDateString(dateOrYear: DateLike | number, month?: number,
 export function toLocalTimeString(date: DateLike): LocalTimeString
 export function toLocalTimeString(hours: number, minutes: number, seconds?: number, milliseconds?: number): LocalTimeString
 export function toLocalTimeString(dateOrHours: DateLike | number, minutes?: number, seconds?: number, milliseconds?: number): LocalTimeString {
-	if (typeof dateOrHours === 'number') {
+	if (typeof dateOrHours === 'number' && typeof minutes === 'number') {
 		/* Use UTC so there are no daylight savings issues */
 		const millis = Date.UTC(1970, 0, 1, dateOrHours || 0, minutes || 0, seconds || 0, milliseconds || 0)
 		const parsed = parse(millis)
@@ -511,7 +511,7 @@ export function toLocalTimeString(dateOrHours: DateLike | number, minutes?: numb
 export function toOffsetDateTimeString(date: DateLike): OffsetDateTimeString
 export function toOffsetDateTimeString(year: number, month: number, day: number, hours: number, minutes: number, seconds?: number, milliseconds?: number, offset?: number): OffsetDateTimeString
 export function toOffsetDateTimeString(dateOrYear: DateLike | number, month?: number, day?: number, hours?: number, minutes?: number, seconds?: number, milliseconds?: number, offset?: number): OffsetDateTimeString {
-	if (typeof dateOrYear === 'number') {
+	if (typeof dateOrYear === 'number' && typeof month === 'number') {
 		if (offset !== undefined) {
 			/* When there's an explicit offset we use UTC to avoid any daylight savings rules */
 			let millis = Date.UTC(
