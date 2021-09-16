@@ -74,7 +74,7 @@ export function isOffsetDateTimeString(date: unknown): date is LocalDateString {
 	if (typeof date !== 'string') {
 		return false
 	}
-	return date.match(/^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}(:[0-9]{2}(\.[0-9]{3})?)?(Z|(\+|-)[0-9]{2}:[0-9]{2})$/) !== null
+	return date.match(/^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}(:[0-9]{2}(\.[0-9]+)?)?(Z|(\+|-)[0-9]{2}:[0-9]{2})$/) !== null
 }
 
 export type DateLike = string | number | MomentOrDayjsLike | DateTimeLike | Date | LiteralLocalDate | LiteralLocalDateTime | LiteralLocalTime | LiteralOffsetDateTime
@@ -265,7 +265,7 @@ function parse(date: DateLike): InternalDate {
 		}
 
 		/* Local time */
-		const localTimeMatch = date.match(/^([0-9]{2}):([0-9]{2})(:([0-9]{2})(\.([0-9]{3}))?)?$/)
+		const localTimeMatch = date.match(/^([0-9]{2}):([0-9]{2})(:([0-9]{2})(\.([0-9]+))?)?$/)
 		if (localTimeMatch) {
 			const now = new Date()
 			const parsed = new Date(now.getFullYear(), now.getMonth(), now.getDate(), Number(localTimeMatch[1]), Number(localTimeMatch[2]), localTimeMatch[4] ? Number(localTimeMatch[4]) : 0)
@@ -281,7 +281,7 @@ function parse(date: DateLike): InternalDate {
 		}
 
 		/* Local date time */
-		const localDateTimeMatch = date.match(/^([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2})(:([0-9]{2})(\.([0-9]{3}))?)?$/)
+		const localDateTimeMatch = date.match(/^([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2})(:([0-9]{2})(\.([0-9]+))?)?$/)
 		if (localDateTimeMatch) {
 			const parsed = new Date(Number(localDateTimeMatch[1]), Number(localDateTimeMatch[2]) - 1, Number(localDateTimeMatch[3]),
 				Number(localDateTimeMatch[4]), Number(localDateTimeMatch[5]), Number(localDateTimeMatch[7] ? localDateTimeMatch[7] : 0))
