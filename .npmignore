@@ -1,6 +1,9 @@
 /.eslintrc.js
 /.nvmrc
 /.vscode
+/CHANGELOG.md
+/dist/__tests__
 /jest.config.js
+/pnpm-lock.yaml
 /tsconfig.*
 /src

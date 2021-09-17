@@ -6,6 +6,7 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc -p tsconfig.prod.json",
+    "clean": "rimraf dist",
     "release": "pnpm clean && pnpm build && pnpm test:all && pnpx changeset publish && pnpm install",
     "release:version": "pnpm changeset version && pnpm install",
     "test": "jest",
@@ -28,6 +29,7 @@
     "jest": "^27.0.6",
     "luxon": "^2.0.1",
     "moment": "^2.29.1",
+    "rimraf": "^3.0.2",
     "ts-jest": "^27.0.3",
     "typescript": "^4.3.5"
   },
