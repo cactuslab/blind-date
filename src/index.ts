@@ -228,7 +228,7 @@ function timezoneFromString(date: string): number | null {
  */
 function timezoneString(date: InternalDate): string {
 	const tz = date.offset !== null ? date.offset : -new Date(date.time).getTimezoneOffset()
-	if (date.offset === 0) {
+	if (tz === 0) {
 		return 'Z'
 	}
 	const hours = Math.floor(Math.abs(tz) / 60)
