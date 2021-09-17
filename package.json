@@ -6,10 +6,10 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc -p tsconfig.prod.json",
-    "prepare": "npm run build",
-    "prepublishOnly": "npm run test:all",
+    "release": "pnpm clean && pnpm build && pnpm test:all && pnpx changeset publish && pnpm install",
+    "release:version": "pnpm changeset version && pnpm install",
     "test": "jest",
-    "test:all": "npm run test:nz && npm run test:us",
+    "test:all": "pnpm run test:nz && pnpm run test:us",
     "test:nz": "TZ=Pacific/Auckland jest",
     "test:us": "TZ=America/Los_Angeles jest",
     "watch": "tsc --watch"
