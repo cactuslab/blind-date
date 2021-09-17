@@ -7,12 +7,12 @@
   "scripts": {
     "build": "tsc -p tsconfig.prod.json",
     "clean": "rimraf dist",
-    "release": "pnpm clean && pnpm build && pnpm test:all && pnpx changeset publish && pnpm install",
+    "release": "pnpm clean && pnpm build && pnpm test && pnpx changeset publish && pnpm install",
     "release:version": "pnpm changeset version && pnpm install",
-    "test": "jest",
-    "test:all": "pnpm run test:nz && pnpm run test:us",
+    "test": "pnpm run test:nz && pnpm run test:us && pnpm run test:utc",
     "test:nz": "TZ=Pacific/Auckland jest",
     "test:us": "TZ=America/Los_Angeles jest",
+    "test:utc": "TZ=UTC jest",
     "watch": "tsc --watch"
   },
   "author": "Cactuslab",
