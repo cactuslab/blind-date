@@ -40,6 +40,11 @@ test('toOffsetDateTimeString respects milliseconds', () => {
 	expect(toOffsetDateTimeString('2020-01-01T00:00:00.001Z')).toEqual('2020-01-01T00:00:00.001Z')
 })
 
+test('toOffsetDateTimeString respects fractional parts of a second longer than 3 digits', () => {
+	expect(toOffsetDateTimeString('2020-01-01T00:00:00.1234Z')).toEqual('2020-01-01T00:00:00.123Z') /* We are limited to an output of 3 digits of fractional parts of a second as our dates are represented in milliseconds */
+	expect(toOffsetDateTimeString('2020-01-01T00:00:00.1239Z')).toEqual('2020-01-01T00:00:00.123Z') /* Fractional parts of the second are not rounded by new Date(..., milliseconds) */ 
+})
+
 test('toOffsetDateTimeString preserves time zones', () => {
 	expect(toOffsetDateTimeString('2020-01-01T00:00:00+12:00')).toEqual('2020-01-01T00:00:00+12:00')
 	expect(toOffsetDateTimeString('2020-01-01T00:00:00-06:00')).toEqual('2020-01-01T00:00:00-06:00')
