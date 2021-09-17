@@ -36,5 +36,8 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/cactuslab/blind-date.git"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }
