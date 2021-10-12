@@ -1,5 +1,11 @@
 # blind-date
 
+## 3.3.0
+
+### Minor Changes
+
+- c9ed9e6: Add support for alternative timezone formats +1200 and +12
+
 ## 3.2.1
 
 ### Patch Changes
