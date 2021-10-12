@@ -74,7 +74,19 @@ export function isOffsetDateTimeString(date: unknown): date is LocalDateString {
 	if (typeof date !== 'string') {
 		return false
 	}
-	return date.match(/^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}(:[0-9]{2}(\.[0-9]+)?)?(Z|(\+|-)[0-9]{2}:[0-9]{2})$/) !== null
+	return date.match(/^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}(:[0-9]{2}(\.[0-9]+)?)?(Z|(\+|-)[0-9]{2}(:?[0-9]{2})?)$/) !== null
+}
+
+/**
+ * Normalise an offset datetime string into a format that Date(string) supports.
+ */
+function normaliseOffsetDateTimeString(date: string): string | null {
+	const match = date.match(/^([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2})(:([0-9]{2})(\.([0-9]+))?)?(Z|(\+|-)([0-9]{2})(:?([0-9]{2}))?)$/)
+	if (!match) {
+		return null
+	}
+
+	return `${match[1]}-${match[2]}-${match[3]}T${match[4]}:${match[5]}:${match[7] || '00'}${match[8] || ''}${match[10] === 'Z' ? match[10] : `${match[11]}${match[12]}${match[13] ? `:${match[14]}` : ':00'}`}`
 }
 
 export type DateLike = string | number | MomentOrDayjsLike | DateTimeLike | Date | LiteralLocalDate | LiteralLocalDateTime | LiteralLocalTime | LiteralOffsetDateTime
@@ -207,14 +219,14 @@ function timezoneFromString(date: string): number | null {
 		return 0
 	}
 
-	const match = date.match(/(\+|-)([0-9][0-9]):([0-9][0-9])$/)
+	const match = date.match(/(\+|-)([0-9][0-9])(:?([0-9][0-9]))?$/)
 	if (!match) {
 		return null
 	}
 
 	const sign = match[1]
 	const hours = Number(match[2])
-	const minutes = Number(match[3])
+	const minutes = match[4] ? Number(match[4]) : 0
 
 	return (sign === '-' ? -1 : 1) * hours * 60 + minutes
 }
@@ -298,8 +310,18 @@ function parse(date: DateLike): InternalDate {
 
 		/* Offset date time */
 		if (isOffsetDateTimeString(date)) {
+			/* Normalise the offset date time as Date(string) doesn't support timezones like +06 which are supported in ISO8601 */
+			const normalised = normaliseOffsetDateTimeString(date)
+			if (normalised === null) {
+				return {
+					time: NaN,
+					offset: null,
+					valid: false,
+					input: date,
+				}
+			}
 			return {
-				time: new Date(date).getTime(),
+				time: new Date(normalised).getTime(),
 				offset: timezoneFromString(date),
 				valid: true,
 				input: date,
