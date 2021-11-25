@@ -1,4 +1,4 @@
-import { isLocalDateString, isLocalTimeString, isOffsetDateTimeString, toLocalDateString, toLocalDateTimeString, toLocalTimeString, toOffsetDateTimeString } from '..'
+import { isLocalDateString, isLocalDateTimeString, isLocalTimeString, isOffsetDateTimeString, toLocalDateString, toLocalDateTimeString, toLocalTimeString, toOffsetDateTimeString } from '..'
 
 test('toLocalDateString from string', () => {
 	expect(toLocalDateString('2020-01-01')).toEqual('2020-01-01')
@@ -63,6 +63,9 @@ test('toOffsetDateTimeString handles alternative formats', () => {
 })
 
 test('isLocalDateString', () => {
+	expect(isLocalDateString(2020)).toBeFalsy()
+	expect(isLocalDateString('junk')).toBeFalsy()
+
 	expect(isLocalDateString('2020-01-01')).toBeTruthy()
 	expect(isLocalDateString('2020-1-01')).toBeFalsy()
 	expect(isLocalDateString('2020-01-1')).toBeFalsy()
@@ -70,6 +73,9 @@ test('isLocalDateString', () => {
 })
 
 test('isLocalTimeString', () => {
+	expect(isLocalTimeString(12)).toBeFalsy()
+	expect(isLocalTimeString('junk')).toBeFalsy()
+
 	expect(isLocalTimeString('12:01:00')).toBeTruthy()
 	expect(isLocalTimeString('12:01:00.001')).toBeTruthy()
 	expect(isLocalTimeString('12:01')).toBeTruthy()
@@ -77,7 +83,21 @@ test('isLocalTimeString', () => {
 	expect(isLocalTimeString('12:01:00.01')).toBeFalsy()
 })
 
+test('isLocalDateTimeString', () => {
+	expect(isLocalDateTimeString(12)).toBeFalsy()
+	expect(isLocalDateTimeString('junk')).toBeFalsy()
+
+	expect(isLocalDateTimeString('2020-01-01T12:01:00')).toBeTruthy()
+	expect(isLocalDateTimeString('2020-01-01T12:01:00.001')).toBeTruthy()
+	expect(isLocalDateTimeString('2020-01-01T12:01')).toBeTruthy()
+	expect(isLocalDateTimeString('2020-01-01T1201')).toBeFalsy()
+	expect(isLocalDateTimeString('2020-01-01T12:01:00.01')).toBeFalsy()
+})
+
 test('isOffsetDateStringString', () => {
+	expect(isOffsetDateTimeString(2020)).toBeFalsy()
+	expect(isOffsetDateTimeString('junk')).toBeFalsy()
+
 	expect(isOffsetDateTimeString('2020-01-01T00:00:00+12:00')).toBeTruthy()
 	expect(isOffsetDateTimeString('2020-01-01T00:00:00-06:00')).toBeTruthy()
 	expect(isOffsetDateTimeString('1969-12-31T00:00:00.000+13:00')).toBeTruthy()
