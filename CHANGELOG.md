@@ -1,5 +1,11 @@
 # blind-date
 
+## 3.4.0
+
+### Minor Changes
+
+- 574d2b0: Update build to node 20
+
 ## 3.3.0
 
 ### Minor Changes
