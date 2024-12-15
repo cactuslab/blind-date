@@ -131,7 +131,7 @@ const offsetDateTime: OffsetDateTimeString = toOffsetDateTimeString(millis)
 
 ## Compatibility
 
-Blind Date uses ISO8601-formatted strings, and is compatible with [`Moment`](https://momentjs.com), `DateTime` from [Luxon](https://moment.github.io/luxon/), [`DayJs`](https://day.js.org), and JavaScript `Date`. Blind Date itself uses [Luxon](https://moment.github.io/luxon/) internally, and will support the others only if they are used in your project as it doesn't depend on them.
+Blind Date uses ISO8601-formatted strings, and is compatible with [`Moment`](https://momentjs.com), `DateTime` from [Luxon](https://moment.github.io/luxon/), [`DayJs`](https://day.js.org), and JavaScript `Date`. Blind Date doesn't have any dependencies, and only supports these libraries if they are used in your project.
 
 ## The benefit of strings and the problem with Dates
 
