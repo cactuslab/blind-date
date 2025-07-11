@@ -1,5 +1,11 @@
 # blind-date
 
+## 3.4.1
+
+### Patch Changes
+
+- 18c406d: Fix isOffsetDateTimeString to assert the correct type
+
 ## 3.4.0
 
 ### Minor Changes
