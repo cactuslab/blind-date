@@ -70,7 +70,7 @@ export function isLocalTimeString(date: unknown): date is LocalTimeString {
 	return date.match(/^[0-9]{2}:[0-9]{2}(:[0-9]{2}(\.[0-9]{3})?)?$/) !== null
 }
 
-export function isOffsetDateTimeString(date: unknown): date is LocalDateString {
+export function isOffsetDateTimeString(date: unknown): date is OffsetDateTimeString {
 	if (typeof date !== 'string') {
 		return false
 	}
